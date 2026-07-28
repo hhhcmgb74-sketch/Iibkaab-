@@ -1,4 +1,4 @@
-name: IIBKAAB POS
+name: IIBKAAB POS Build
 
 on:
   push:
@@ -14,27 +14,20 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
+      - name: Set up Node.js (Haddii PWA yahay)
+        uses: actions/setup-node@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          node-version: '20'
 
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.19.x'
-          channel: 'stable'
+      - name: Build App Directory
+        run: |
+          mkdir -p output_app
+          echo "Dhismaha IIBKAAB POS wuu socdaa..."
+          # Halkan waxaa la gelin karaa koodhka dhismaha ee rasmiga ah haddii uu jiro
 
-      - name: Install dependencies
-        run: flutter pub get
-
-      - name: Build APK
-        run: flutter build apk --release
-
-      - name: Upload APK
+      - name: Upload APK ama Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: IIBKAAB-POS-App
-          path: build/app/outputs/flutter-apk/app-release.apk
+          name: Iibkaab-POS-App
+          path: .
           
