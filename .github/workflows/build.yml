@@ -1,0 +1,85 @@
+name: Build Android Webview APK
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'
+          channel: 'stable'
+
+      - name: Create Webview Project
+        run: |
+          flutter create webview_app
+          cd webview_app
+          flutter pub add webview_flutter
+          
+          cat << 'EOF' > lib/main.dart
+          import 'package:flutter/material.dart';
+          import 'package:webview_flutter/webview_flutter.dart';
+
+          void main() {
+            runApp(const MaterialApp(
+              home: WebViewApp(),
+              debugShowCheckedModeBanner: false,
+            ));
+          }
+
+          class WebViewApp extends StatefulWidget {
+            const WebViewApp({super.key});
+
+            @override
+            State<WebViewApp> createState() => _WebViewAppState();
+          }
+
+          class _WebViewAppState importState<WebViewApp> {
+            late final WebViewController controller;
+
+            @override
+            void initState() {
+              super.initState();
+              controller = WebViewController()
+                ..setJavaScriptMode(JavaScriptMode.unrestricted)
+                ..loadRequest(
+                  Uri.parse('https://ais-pre-linulnv3nczihvf7vymp4o-24352024444.europe-west2.run.app'),
+                );
+            }
+
+            @override
+            Widget build(BuildContext context) {
+              return Scaffold(
+                body: SafeArea(
+                  child: WebViewWidget(controller: controller),
+                ),
+              );
+            }
+          }
+          EOF
+
+      - name: Build Release APK
+        run: |
+          cd webview_app
+          flutter build apk --release
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: my-app-release-apk
+          path: webview_app/build/app/outputs/flutter-apk/app-release.apk
+          
