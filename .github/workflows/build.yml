@@ -28,15 +28,25 @@ jobs:
 
       - name: Build Webview App
         run: |
+          # 1. Samee Flutter project cusub
           flutter create my_webview_app
           cd my_webview_app
-          flutter pub add webview_flutter
           
+          # 2. Ku dar Webview package-ka
+          flutter pub add webview_flutter
+
+          # 3. Ku dar Internet Permission AndroidManifest.xml
+          sed -i '/<manifest/a \    <uses-permission android:name="android.permission.INTERNET"/>' android/app/src/main/AndroidManifest.xml
+          sed -i '/<manifest/a \    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>' android/app/src/main/AndroidManifest.xml
+          sed -i 's/<application/<application android:usesCleartextTraffic="true"/' android/app/src/main/AndroidManifest.xml
+
+          # 4. Ku qor koodhka main.dart
           cat << 'EOF' > lib/main.dart
           import 'package:flutter/material.dart';
           import 'package:webview_flutter/webview_flutter.dart';
 
           void main() {
+            WidgetsFlutterBinding.ensureInitialized();
             runApp(const MaterialApp(
               home: WebViewApp(),
               debugShowCheckedModeBanner: false,
@@ -58,6 +68,14 @@ jobs:
               super.initState();
               controller = WebViewController()
                 ..setJavaScriptMode(JavaScriptMode.unrestricted)
+                ..setBackgroundColor(const Color(0x00000000))
+                ..setNavigationDelegate(
+                  NavigationDelegate(
+                    onPageStarted: (String url) {},
+                    onPageFinished: (String url) {},
+                    onWebResourceError: (WebResourceError error) {},
+                  ),
+                )
                 ..loadRequest(
                   Uri.parse('https://ais-pre-linulnv3nczihvf7vymp4o-24352024444.europe-west2.run.app'),
                 );
@@ -73,10 +91,11 @@ jobs:
             }
           }
           EOF
-          
+
+          # 5. Build samee APK-ga
           flutter build apk --release
 
-      - name: Upload APK
+      - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-release
