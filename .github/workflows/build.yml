@@ -8,26 +8,28 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
       - name: Set up Java
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
+          distribution: 'temurin'
           java-version: '17'
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.x'
+          flutter-version: '3.19.x'
           channel: 'stable'
 
-      - name: Create Webview Project
+      - name: Build Webview App
         run: |
-          flutter create webview_app
-          cd webview_app
+          flutter create my_webview_app
+          cd my_webview_app
           flutter pub add webview_flutter
           
           cat << 'EOF' > lib/main.dart
@@ -48,7 +50,7 @@ jobs:
             State<WebViewApp> createState() => _WebViewAppState();
           }
 
-          class _WebViewAppState importState<WebViewApp> {
+          class _WebViewAppState extends State<WebViewApp> {
             late final WebViewController controller;
 
             @override
@@ -71,15 +73,12 @@ jobs:
             }
           }
           EOF
-
-      - name: Build Release APK
-        run: |
-          cd webview_app
+          
           flutter build apk --release
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: my-app-release-apk
-          path: webview_app/build/app/outputs/flutter-apk/app-release.apk
+          name: app-release
+          path: my_webview_app/build/app/outputs/flutter-apk/app-release.apk
           
