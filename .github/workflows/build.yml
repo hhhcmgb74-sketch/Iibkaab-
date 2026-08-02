@@ -1,5 +1,7 @@
-name: Build IibKaab Android APK
+# Magaca workflow-ga oo loo qaabeeyay IibKaab POS
+name: Build IibKaab POS (Official)
 
+# Goorta uu shaqaynayo (workflow dispatch si gacanta looga riixo, push si otomaatig ah main/master uun u socdo)
 on:
   push:
     branches: [ main, master ]
@@ -10,29 +12,39 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Ka soo dejiso koodhka repository-ga
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      # 2. Samee nidaamka Java (Java JDK 17)
       - name: Set up Java JDK
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
 
+      # 3. Samee nidaamka Flutter (Channel-ka stable)
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.19.x'
           channel: 'stable'
 
+      # 4. Soo deji dhammaan packages-ka ku jira pubspec.yaml
       - name: Install Dependencies
         run: flutter pub get
 
+      # 5. Dhis APK-ga rasmiga ah (Release mode)
+      # --no-tree-shake-icons waa lagama maarmaan haddii aad isticmaasho fonts icon oo gaar ah
       - name: Build APK
         run: flutter build apk --release --no-tree-shake-icons
 
+      # 6. Ku kor-dhi (Upload) APK-ga GitHub si aad u soo dejisato
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: IibKaab-POS-Release-APK
+          # Magaca nidaamka GitHub uu isticmaali doono si uu u kaydiyo faylka (IibKaab loo qaabeeyay)
+          name: IibKaab-POS-Android-Build
+          # Wadada rasmiga ah ee APK-ga release-ka ah ee Flutter uu soo saaro
           path: build/app/outputs/flutter-apk/app-release.apk
+          
